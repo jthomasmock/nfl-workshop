@@ -6,3 +6,10 @@ This workshop provides a gentle introduction to supervised machine learning: con
 Slides at [cmsac-tidymodels.netlify.app](https://cmsac-tidymodels.netlify.app/#1)
 
 ![](images/readme-preview.png)
+
+
+### Source Code
+
+There are a few files for you to use for source-code:  
+- [`raw_plays.rds`](https://github.com/jthomasmock/nfl-workshop/blob/master/raw_plays.rds) - so you don't have to download ALL the `nflfastR` data
+- [Full Code extracted from RMD Slides](https://github.com/jthomasmock/nfl-workshop/blob/master/tidymodels-code.R)
