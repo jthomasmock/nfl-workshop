@@ -24,7 +24,7 @@ class: center, middle, inverse, title-slide
 
 layout: true
 
-&lt;div class="my-footer"&gt;&lt;span&gt;arm.rbind.io/slides/blogdown&lt;/span&gt;&lt;/div&gt;
+&lt;div class="my-footer"&gt;&lt;span&gt;cmsac-tidymodels.netlify.app/&lt;/span&gt;&lt;/div&gt;
 
 &lt;!-- this adds the link footer to all slides, depends on my-footer class in css--&gt;
 
@@ -94,8 +94,8 @@ Binary classification:
 - Logistic Regression  
 - Random Forest  
 
-Slides at: [INSERT LINK]()  
-Source code at: [INSERT LINK]()  
+Slides at: [cmsac-tidymodels.netlify.app/](https://cmsac-tidymodels.netlify.app/#1)  
+Source code at: [github.com/jthomasmock/nfl-workshop](https://github.com/jthomasmock/nfl-workshop)  
 
 ---
 
@@ -165,14 +165,14 @@ QBR = ESPN's Quarterback Rating, which ranges from 0 - 100.
 --
 
 .pull-left[
-&lt;img src="qbr_win_plot.png" width="85%" /&gt;
+&lt;img src="images/qbr_win_plot.png" width="85%" /&gt;
 
 ]
 
 --
 
 .pull-right[
-&lt;img src="qbr_win_tab.png" width="50%" /&gt;
+&lt;img src="images/qbr_win_tab.png" width="50%" /&gt;
 
 ]
 
@@ -416,7 +416,7 @@ Confusion Matrix: Predicted vs Actual
 
 
 
-&lt;img src="gt1.png" width="75%" /&gt;
+&lt;img src="images/gt1.png" width="75%" /&gt;
 
 Adapted from [Hands on Machine Learning with R](https://bradleyboehmke.github.io/HOML/process.html#classification-models)
 
@@ -426,7 +426,7 @@ Adapted from [Hands on Machine Learning with R](https://bradleyboehmke.github.io
 
 
 
-&lt;img src="gt2.png" width="75%" /&gt;
+&lt;img src="images/gt2.png" width="75%" /&gt;
 
 Adapted from [Hands on Machine Learning with R](https://bradleyboehmke.github.io/HOML/process.html#classification-models)
 
@@ -915,7 +915,7 @@ pbp_pred_lr %&gt;%
 ## # A tibble: 1 x 3
 ##   .metric .estimator .estimate
 ##   &lt;chr&gt;   &lt;chr&gt;          &lt;dbl&gt;
-## 1 roc_auc binary         0.778
+## 1 roc_auc binary         0.781
 ```
 
 ```r
@@ -929,8 +929,8 @@ pbp_pred_lr %&gt;%
 ## # A tibble: 2 x 3
 ##   .metric  .estimator .estimate
 ##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
-## 1 accuracy binary         0.722
-## 2 kap      binary         0.417
+## 1 accuracy binary         0.725
+## 2 kap      binary         0.423
 ```
 
 ]
@@ -1058,8 +1058,8 @@ pbp_pred_rf %&gt;% # Random Forest predictions
 ## # A tibble: 2 x 3
 ##   .metric  .estimator .estimate
 ##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
-## 1 accuracy binary         0.727
-## 2 kap      binary         0.432
+## 1 accuracy binary         0.731
+## 2 kap      binary         0.441
 ```
 
 ```r
@@ -1071,8 +1071,8 @@ pbp_pred_lr %&gt;% # Logistic Regression predictions
 ## # A tibble: 2 x 3
 ##   .metric  .estimator .estimate
 ##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
-## 1 accuracy binary         0.722
-## 2 kap      binary         0.417
+## 1 accuracy binary         0.725
+## 2 kap      binary         0.423
 ```
 
 
@@ -1252,7 +1252,7 @@ Previously we've just compared two models by seeing how accurate they were on ou
 
 --
 
-&lt;img src="resample-pic.png" width="45%" /&gt;
+&lt;img src="images/resample-pic.png" width="45%" /&gt;
 
 
 ---
@@ -1792,8 +1792,8 @@ rf_tuned_fit %&gt;%  # tuned model metrics
 ## # A tibble: 2 x 3
 ##   .metric  .estimator .estimate
 ##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
-## 1 accuracy binary         0.730
-## 2 roc_auc  binary         0.795
+## 1 accuracy binary         0.732
+## 2 roc_auc  binary         0.798
 ```
 
 
@@ -1805,8 +1805,8 @@ rf_compare_df # naive model metrics
 ## # A tibble: 2 x 3
 ##   .metric  .estimator .estimate
 ##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
-## 1 accuracy binary         0.727
-## 2 roc_auc  binary         0.795
+## 1 accuracy binary         0.731
+## 2 roc_auc  binary         0.797
 ```
 
 ---

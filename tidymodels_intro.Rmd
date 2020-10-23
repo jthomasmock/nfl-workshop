@@ -190,7 +190,7 @@ Binary classification:
 - Random Forest  
 
 Slides at: [cmsac-tidymodels.netlify.app/](https://cmsac-tidymodels.netlify.app/#1)  
-Source code at: [INSERT LINK]()  
+Source code at: [github.com/jthomasmock/nfl-workshop](https://github.com/jthomasmock/nfl-workshop)  
 
 ---
 
@@ -270,7 +270,7 @@ knitr::include_graphics("images/qbr_win_plot.png")
 
 .pull-right[
 ```{r, echo = FALSE, out.width="50%"}
-knitr::include_graphics("qbr_win_tab.png")
+knitr::include_graphics("images/qbr_win_tab.png")
 ```
 
 ]
