@@ -65,154 +65,6 @@ knitr::include_graphics("https://raw.githubusercontent.com/rstudio/hex-stickers/
 knitr::include_graphics("https://bradleyboehmke.github.io/HOML/02-modeling-process_files/figure-html/modeling-process-roc-1.png")
 
 
-## ---- echo = FALSE, eval = FALSE-------------------------------------------------------------------------------------------------------------------
-## gt_img <- tibble(
-##   rowname = c("Actual Events", "Actual Non-Events"),
-##   `Predicted Events` = c("True Positives", "False Positives"),
-##   `Predicted Non-Events` = c("False Negative", "True Negative")
-## ) %>%
-##   gt(rowname_col = "rowname") %>%
-##   cols_width(
-##     1 ~ px(120),
-##     2 ~ px(100),
-##     3 ~ px(100)
-##   ) %>%
-##   tab_style(
-##     style = cell_borders(
-##       sides = "left",
-##       color = "black",
-##       weight = px(3)
-##     ),
-##     locations = list(
-##       cells_body(
-##      columns = 2,
-##      rows = TRUE
-##     ),
-##     cells_column_labels(columns = 1)
-##     )
-##   ) %>%
-##   tab_style(
-##     style = cell_borders(
-##       sides = "bottom",
-##       color = "transparent",
-##       weight = px(3)
-##     ),
-##     locations = list(
-##       cells_body(
-##      columns = TRUE,
-##      rows = 2
-##     ),
-##     cells_stub()
-##     )
-##   ) %>%
-##   tab_style(
-##     style = cell_fill(
-##       color = "green", alpha = 0.5
-##     ),
-##     locations = list(
-##       cells_body(
-##       columns = 2, rows = 1
-##     ),
-##     cells_body(
-##       columns = 3, rows = 2
-##     )
-##     )
-##   ) %>%
-##   tab_options(
-##     table_body.hlines.color = "transparent",
-##     column_labels.border.bottom.color = "black",
-##     column_labels.border.bottom.width = px(3),
-##     table.border.top.color = "transparent",
-##     table.border.top.width = px(3)
-##   )
-## gtsave(gt_img, "gt1.png")
-
-
-## ---- echo = FALSE, out.width="75%"----------------------------------------------------------------------------------------------------------------
-knitr::include_graphics("images/gt1.png")
-
-
-## ---- echo = FALSE, eval = FALSE-------------------------------------------------------------------------------------------------------------------
-## gt_img2 <- tibble(
-##   rowname = c("Actual Events", "Actual Non-Events"),
-##   `Predicted Events` = c("True Positives", "False Positives"),
-##   `Predicted Non-Events` = c("False Negative", "True Negative")
-## ) %>%
-##   gt(rowname_col = "rowname") %>%
-##   cols_width(
-##     1 ~ px(120),
-##     2 ~ px(100),
-##     3 ~ px(100)
-##   ) %>%
-##   tab_style(
-##     style = cell_borders(
-##       sides = "left",
-##       color = "black",
-##       weight = px(3)
-##     ),
-##     locations = list(
-##       cells_body(
-##      columns = 2,
-##      rows = TRUE
-##     ),
-##     cells_column_labels(columns = 1)
-##     )
-##   ) %>%
-##   tab_style(
-##     style = cell_borders(
-##       sides = "bottom",
-##       color = "transparent",
-##       weight = px(3)
-##     ),
-##     locations = list(
-##       cells_body(
-##      columns = TRUE,
-##      rows = 2
-##     ),
-##     cells_stub()
-##     )
-##   ) %>%
-##   tab_style(
-##     style = cell_fill(
-##       color = "green", alpha = 0.5
-##     ),
-##     locations = list(
-##       cells_body(
-##       columns = 2, rows = 1
-##     ),
-##     cells_body(
-##       columns = 3, rows = 2
-##     )
-##     )
-##   ) %>%
-##   tab_style(
-##     style = cell_fill(
-##       color = "purple", alpha = 0.5
-##     ),
-##     locations = list(
-##       cells_body(
-##       columns = 3, rows = 1
-##     ),
-##     cells_body(
-##       columns = 2, rows = 2
-##     )
-##     )
-##   ) %>%
-##   tab_options(
-##     table_body.hlines.color = "transparent",
-##     column_labels.border.bottom.color = "black",
-##     column_labels.border.bottom.width = px(3),
-##     table.border.top.color = "transparent",
-##     table.border.top.width = px(3)
-##   )
-## 
-## gtsave(gt_img2, "gt2.png")
-
-
-## ---- echo = FALSE, out.width="75%"----------------------------------------------------------------------------------------------------------------
-knitr::include_graphics("images/gt2.png")
-
-
 ## ----read-data-and-filter, cache = TRUE, echo = FALSE----------------------------------------------------------------------------------------------
 pbp_db <- tbl(DBI::dbConnect(RSQLite::SQLite(), "pbp_db.sqlite"), "pbp_clean_2000-2019")
 
@@ -235,6 +87,12 @@ raw_plays <- pbp_db %>%
     defteam_timeouts_remaining, wp, goal_to_go, half_seconds_remaining
   ) %>%
   collect() 
+
+## ---- skip-in-rmd
+
+## IF DOING LOCALLY WITHOUT PBP DATABASE
+
+raw_plays <- read_rds(url("https://github.com/jthomasmock/nfl-workshop/blob/master/raw_plays.rds?raw=true"))
 
 ## ---- size=1---------------------------------------------------------------------------------------------------------------------------------------
 glimpse(raw_plays)

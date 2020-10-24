@@ -1,6 +1,6 @@
 ---
-title: "Intro to `tidymodels` with `nflfastR` play-by-play"
-author: "Thomas Mock: `@thomas_mock`"
+title: "Intro to `tidymodels` with `nflfastR`"
+author: "Tom Mock: [`@thomas_mock`](https://twitter.com/thomas_mock)"
 date: "`r Sys.Date()`"
 output:
   xaringan::moon_reader:
@@ -28,6 +28,7 @@ knitr::opts_chunk$set(fig.retina = 3, warning = FALSE, message = FALSE)
 
 knitr::read_chunk("tidymodel_script.R")
 ```
+
 
 layout: true
 
@@ -125,6 +126,33 @@ div.my-footer span {
 
 ```
 
+### What have I done?
+
+* Scored 100% of our game-winning goals on my 2010 College Lacrosse Team (we only won 1 game `r emo::ji("cry")`)  
+* Bachelor's in Kinesiology (2011) - Effect of Sugar vs Sugar-Free Mouth Rinse on Performance  
+* Master's in Exercise Physiology (2014) - Effect of Exercise on Circulating Brain Biomarkers  
+* PhD in Neurobiology (2018) - Effect of Aging + Glutathione Deficiency on Motor and Cognitive Function    
+
+--
+
+### What do I do?
+
+* RStudio, Customer Success (2018 - Current) - I run our High Technology + Sports vertical, helping RStudio's customers use our Pro and open source software to solve problems with data  
+
+--
+
+* [`#TidyTuesday`](https://github.com/rfordatascience/tidytuesday/blob/master/README.md) - Weekly data analysis community project (~4,000 participants in past 3 years)  
+
+--
+
+* [TheMockUp.blog](https://themockup.blog/) - Explanatory blogging about `How to do Stuff` with data + `#rstats`, *mostly* with NFL data  
+
+--
+
+* [`espnscrapeR`](https://jthomasmock.github.io/espnscrapeR/) - collect data from ESPN's public APIs, mostly for QBR and team standings  
+
+---
+
 .pull-left[
 ### The `nflscrapR` team:
 (data from 2009-current)
@@ -151,6 +179,16 @@ knitr::include_graphics("https://raw.githubusercontent.com/mrcaseb/nflfastR/mast
 ]
 
 These datasets set the bar for publicly-available NFL data!
+
+---
+
+### Shoutout to the NFL Big Data Bowl
+
+![](https://storage.googleapis.com/kaggle-competitions/kaggle/15696/logos/thumb76_76.png?t=2019-10-04-16-17-46)
+
+[Kaggle link](https://www.kaggle.com/c/nfl-big-data-bowl-2021)
+
+> This competition uses NFL’s Next Gen Stats data, which includes the position and speed of every player on the field during each play. You’ll employ player tracking data for all drop-back pass plays from the 2018 regular season. The goal of submissions is to identify unique and impactful approaches to measure defensive performance on these plays.
 
 ---
 
@@ -189,8 +227,20 @@ Binary classification:
 - Logistic Regression  
 - Random Forest  
 
+--
+
 Slides at: [cmsac-tidymodels.netlify.app/](https://cmsac-tidymodels.netlify.app/#1)  
 Source code at: [github.com/jthomasmock/nfl-workshop](https://github.com/jthomasmock/nfl-workshop)  
+
+--
+
+To follow along, you can read in the subsetted data with the code below:  
+
+```{r, eval = FALSE}
+raw_plays <- read_rds(
+  url("https://github.com/jthomasmock/nfl-workshop/blob/master/raw_plays.rds?raw=true")
+  )
+```
 
 ---
 
@@ -209,13 +259,15 @@ It's just not possible!
 * Make you comfortable with the **syntax** and **packages** via `tidymodels` unified interface
 * So when you're learning or modeling on your own, you get to focus on the **stats** rather than re-learning different APIs over and over...
 
-Along the way, we'll cover minimal examples and then some more quick best practices
+--
+
+Along the way, we'll cover minimal examples and then some more quick best practices where `tidymodels` makes it easier to do more things!  
 
 ---
 
 # `tidymodels`
 
-The `tidymodels` framework is a collection of packages for modeling and machine learning using `tidyverse` principles.
+`tidymodels` is a collection of packages for modeling and machine learning using `tidyverse` principles.
 
 ## Packages
 * `rsample`: efficient data splitting and resampling  
@@ -255,7 +307,7 @@ I *personally* use `broom` for more classical statistics and `tidymodels` for ma
 
 ### Before we get to sweeping
 
-QBR = ESPN's Quarterback Rating, which ranges from 0 - 100.
+Why do we care so much about QBs, passing, and EPA?
 
 --
 
@@ -361,6 +413,50 @@ broom::glance(basic_lm)
 
 There's a lot more to `broom` for *tidy-ier* modeling - out of scope for today, but I have a detailed [**blogpost**](https://themockup.blog/posts/2020-05-01-tidy-long-models/).
 
+.medium[
+```{r, eval = FALSE}
+tidy_off_models <- nest_off_data %>% 
+    mutate(
+      fit = map(data, ~ lm(value.y ~ value.x, data = .x)),
+      tidy_output = map(fit, glance)
+    )
+
+tidy_off_models
+```
+
+]
+
+--
+
+.medium[
+```
+# # A tibble: 12 x 4
+#    metric         data               fit    tidy_output      
+#    <chr>          <list>             <list> <list>           
+#  1 pass_att       <tibble [593 × 5]> <lm>   <tibble [1 × 12]>
+#  2 pass_comp_pct  <tibble [593 × 5]> <lm>   <tibble [1 × 12]>
+#  3 yds_att        <tibble [593 × 5]> <lm>   <tibble [1 × 12]>
+#  4 pass_yds       <tibble [593 × 5]> <lm>   <tibble [1 × 12]>
+#  5 pass_td        <tibble [593 × 5]> <lm>   <tibble [1 × 12]>
+#  6 int            <tibble [593 × 5]> <lm>   <tibble [1 × 12]>
+#  7 pass_rating    <tibble [593 × 5]> <lm>   <tibble [1 × 12]>
+#  8 first_downs    <tibble [593 × 5]> <lm>   <tibble [1 × 12]>
+#  9 pass_first_pct <tibble [593 × 5]> <lm>   <tibble [1 × 12]>
+# 10 pass_20plus    <tibble [593 × 5]> <lm>   <tibble [1 × 12]>
+# 11 pass_40plus    <tibble [593 × 5]> <lm>   <tibble [1 × 12]>
+# 12 sacks          <tibble [593 × 5]> <lm>   <tibble [1 × 12]>
+```
+
+]
+
+
+---
+
+#### Want more `broom`?
+
+There's a lot more to `broom` for *tidy-ier* modeling - out of scope for today, but I have a detailed [**blogpost**](https://themockup.blog/posts/2020-05-01-tidy-long-models/).
+
+
 ```{r, echo=FALSE, out.width="60%"}
 knitr::include_graphics("https://themockup.blog/posts/2020-05-01-tidy-long-models/distill-preview.png")
 ```
@@ -423,6 +519,10 @@ Accuracy = How often the classifier is correct out of the total possible predict
 
 --
 
+Accuracy = True Positives + True Negatives / (True Positives + True Negatives + False Positives + False Negatives)
+
+--
+
 * True Positive Rate (Sensitivity/Recall):  
   - Out of all **true positives**, how many did you predict right?  
   - True Positives / (True Positives + False Negatives)  
@@ -442,9 +542,24 @@ There are several other types of calculations you can generate, but these cover 
 
 ---
 
-### ROC Curve example
+#### ROC Curve example
 
-```{r, echo = FALSE, out.width = "55%"}
+.medium[
+* False Positive Rate == (`1 - Specificity`) on X
+* True Positive Rate (Sensitivity) on Y  
+
+]
+
+--
+
+.medium[
+* AUC = Area Under the Curve (higher = better)
+
+]
+
+--
+
+```{r, echo = FALSE, out.width = "50%"}
 knitr::include_graphics("https://bradleyboehmke.github.io/HOML/02-modeling-process_files/figure-html/modeling-process-roc-1.png")
 ```
 
@@ -624,6 +739,50 @@ knitr::include_graphics("images/gt2.png")
 
 Adapted from [Hands on Machine Learning with R](https://bradleyboehmke.github.io/HOML/process.html#classification-models)
 
+---
+
+### Confusion Matrix
+.pull-left[
+```{r, echo = FALSE}
+table_conf_mat <- read_rds("table_conf_mat.rds")
+table_conf_mat
+```
+
+]
+
+.pull-right[
+```{r, fig.dim=c(5,5)}
+table_conf_mat %>% 
+  autoplot("heatmap")
+```
+
+]
+
+
+---
+
+### Calibration Plot
+
+How well do the predictions stand up against the observed?
+
+.pull-left[
+```{r echo = FALSE, fig.dim=c(6,6)}
+prob_calib_plot <- read_rds("prob-calib-plot.rds")
+
+prob_calib_plot
+```
+
+
+]
+
+--
+
+.pull-right[
+```{r, echo = FALSE, out.width="75%"}
+knitr::include_graphics("https://www.tmwr.org/figures/resampling-cv-pred-plot-1.svg")
+```
+
+]
 
 ---
 
@@ -873,8 +1032,22 @@ class: inverse, center, middle
 ### In `recipes` vs `dplyr`/`tidyr`
 
 Generally:  
-* Reshaping or basic cleaning - do in `tidyverse`  
-* Statistical transformations or other things that are intended for modeling  
+* In `tidyverse`, do reshaping or basic cleaning   
+* In `recipes` do statistical transformations or other things that are intended for modeling  
+  - Possible `step_???` for many many things!  
+
+--
+
+### `usemodels`
+
+Relatively early in package life cycle, but helps with boilerplate
+
+.small[
+```{r}
+usemodels::use_ranger(play_type ~ ., train_data)
+```
+
+]
 
 ---
 class:inverse, center, middle
@@ -932,6 +1105,14 @@ A workflow is an object that can bundle together your pre-processing, modeling, 
 
 * If you have custom tuning parameter settings, these can be defined using a simpler interface when combined with `tune`.
 
+--
+
+### Steps so far
+
+- Build a recipe for any pre-processing  
+- Choose and build a model  
+- Combine them into a `workflow`
+
 ---
 
 ## Fit/train the model with `parsnip`
@@ -956,6 +1137,25 @@ pbp_pred_lr <- predict(pbp_fit_lr, test_data) %>%
   bind_cols(test_data %>% select(play_type)) %>% 
   # Get probabilities for the class for each observation
   bind_cols(predict(pbp_fit_lr, test_data, type = "prob"))
+```
+
+```{r, echo = FALSE, warning = FALSE}
+pbp_pred_lr
+```
+
+
+
+---
+
+## Predict outcomes with `parsnip`
+
+Note that out previous code of `predict() %>% bind_cols() %>% bind_cols()` is really the equivalent to the below:  
+
+```{r}
+pbp_last_lr <- last_fit(lr_mod, pbp_rec, split = split_pbp)
+
+pbp_last_lr %>% 
+  pluck(".predictions", 1)
 ```
 
 ---
@@ -1002,6 +1202,18 @@ pbp_pred_lr %>%
 
 ]
 
+---
+
+### Note on Checking Outcomes
+
+You *could* use `last_fit()`:  
+> This functions is intended to be used after fitting a variety of models and the final tuning parameters (if any) have been finalized. The next step would be to fit using the entire training set and verify performance using the test data.
+
+```{r}
+lr_last_fit <- last_fit(lr_mod, pbp_rec, split = split_pbp)
+
+collect_metrics(lr_last_fit)
+```
 
 
 ---
@@ -1058,6 +1270,14 @@ pbp_pred_lr %>%
 ]
 
 ---
+class: inverse, center, middle
+
+# Break!
+
+# `r emo::ji("coffee")`
+
+
+---
 
 ## Change the model
 
@@ -1084,22 +1304,6 @@ pbp_pred_rf <- predict(pbp_fit_rf, test_data) %>%
   bind_cols(predict(pbp_fit_rf, test_data, type = "prob"))
 ```
 
-
----
-
-### Quick comparison
-
-The random forest model slightly outperforms the logistic regression, although both are not perfect
-
-```{r compare_metrics call}
-pbp_pred_rf %>% # Random Forest predictions
-  metrics(truth = play_type, .pred_class)
-
-pbp_pred_lr %>% # Logistic Regression predictions
-  metrics(truth = play_type, .pred_class)
-```
-
-
 ---
 
 ### Feature Importance
@@ -1112,6 +1316,34 @@ pbp_fit_rf %>%
 ```
 
 ]
+
+---
+
+### Quick Model Comparison
+
+The random forest model slightly outperforms the logistic regression, although both are not perfect
+
+```{r compare_metrics call}
+pbp_pred_lr %>% # Logistic Regression predictions
+  metrics(truth = play_type, .pred_class)
+
+pbp_pred_rf %>% # Random Forest predictions
+  metrics(truth = play_type, .pred_class)
+```
+
+---
+
+### Quick Model Comparison
+
+```{r}
+pbp_pred_lr %>% # Logistic Regression predictions
+  conf_mat(truth = play_type, .pred_class)
+
+pbp_pred_rf %>% # Random Forest predictions
+  conf_mat(truth = play_type, .pred_class)
+```
+
+
 
 ---
 
@@ -1166,7 +1398,7 @@ full_plot
 calibration_plot <- pbp_pred_rf %>% 
   mutate(
     pass = if_else(play_type == "pass", 1, 0),
-    pred_rnd = round(.pred_pass, 1)
+    pred_rnd = round(.pred_pass, 2)
     ) %>% 
   group_by(pred_rnd) %>% 
   summarize(
@@ -1176,7 +1408,7 @@ calibration_plot <- pbp_pred_rf %>%
     ) %>% 
   ggplot(aes(x = mean_pred, y = mean_obs)) +
   geom_abline(linetype = "dashed") +
-  geom_point(aes(size = n)) +
+  geom_point(aes(size = n), alpha = 0.5) +
   theme_minimal() +
   labs(
     x = "Predicted Pass", 
@@ -1190,7 +1422,7 @@ calibration_plot <- pbp_pred_rf %>%
 ]
 
 .pull-right[
-```{r, echo = FALSE, fig.dim=c(7,7)}
+```{r calibrate-plot-fit, echo = FALSE, fig.dim=c(7,7)}
 calibration_plot
 ```
 
@@ -1211,8 +1443,8 @@ So the unified interface hopefully makes the idea of learning and applying many 
 
 --
 
-`tidymodels` *really* shines when you start to apply additional best practices like:  
-* Resampling, Cross Validation, Bootstraps  
+`tidymodels` *really* shines when you start to go further or apply best practices like:  
+* Resampling, Cross Validation, Bootstrapping  
 * Model Tuning and Model Optimization  
 * Grid Search, Iterative Search  
 
@@ -1252,7 +1484,9 @@ Previously we've just compared two models by seeing how accurate they were on ou
 
 - [*Tidy Modeling with R*](https://www.tmwr.org/resampling.html#resampling-methods)
 
+--
 
+[Get Started w/ Resampling](https://www.tidymodels.org/start/resampling/) and test drive on [RStudio Cloud](https://rstudio.cloud/project/1479888).
 
 ---
 
@@ -1348,20 +1582,85 @@ rf_res
 
 ---
 
+### What just happened???
+
+We just fit a model for each resample, evaluated it against a within resample assessment set, and stored it into a single `tibble`!
+
+.pull-left[
+```{r}
+rf_res %>% 
+  # grab specific columns and resamples
+  pluck(".metrics", 1) 
+```
+
+]
+
+
+.pull-right[
+```{r}
+rf_res %>% 
+  # grab specific columns and resamples
+  pluck(".predictions", 10)
+```
+
+]
+
+---
+
+### What else can you do?
+
+.pull-left[
+```{r}
+# Summarize all metrics
+rf_res %>% 
+  collect_metrics(summarize = TRUE)
+```
+
+]
+
+
+.pull-right[
+```{r, eval = FALSE}
+rf_res %>% 
+  # combine ALL predictions
+  collect_predictions()
+```
+
+.small[
+```{r, echo = FALSE}
+rf_res %>% 
+  collect_predictions()
+```
+
+]
+
+]
+
+---
+
 ### Collect metrics
 
 First show our predicted model with compared against our test data.
 
+--
 
 .medium[
 .pull-left[
+```{r, echo = FALSE}
+set.seed(20201024)
+```
+
 ```{r}
 # Naive Model on Testing Data
 rf_compare_df <- bind_rows(
-  accuracy(pbp_pred_rf, 
-    truth = play_type, .pred_class),
-  roc_auc(pbp_pred_rf, 
-    truth = play_type, .pred_pass)
+  accuracy(
+    pbp_pred_rf, 
+    truth = play_type, .pred_class
+    ),
+  roc_auc(
+    pbp_pred_rf, 
+    truth = play_type, .pred_pass
+    )
   )
 ```
 
@@ -1374,14 +1673,15 @@ combo_plot <- rf_res %>%
   geom_jitter(width = 0.2) +
   geom_boxplot(width = 0.3, alpha = 0.5) +
   geom_point(
-    data = rf_compare_df, #
-    color = "red",
-    size = 3 
+    data = rf_compare_df,
+    color = "red", size = 5
     )
 ```
 ]
 
 ]
+
+--
 
 .tiny[
 .pull-right[
@@ -1446,6 +1746,54 @@ res_calib_plot
 ]
 
 ---
+
+### Compare the Calibrations
+
+.pull-left[
+```{r, echo = FALSE, fig.dim=c(7,7)}
+pbp_pred_lr_train <- predict(pbp_fit_lr, train_data) %>% 
+  # Add back a "truth" column for what the actual play_type was
+  bind_cols(train_data %>% select(play_type)) %>% 
+  # Get probabilities for the class for each observation
+  bind_cols(predict(pbp_fit_lr, train_data, type = "prob"))
+
+
+pbp_pred_lr_train %>% 
+  mutate(
+    pass = if_else(play_type == "pass", 1, 0),
+    pred_rnd = round(.pred_pass, 2)
+  ) %>% 
+  group_by(pred_rnd) %>%
+  summarize(
+    mean_pred = mean(.pred_pass),
+    mean_obs = mean(pass),
+    n = n()
+  ) %>% 
+  ggplot(aes(x = mean_pred, y = mean_obs)) +
+  geom_abline(linetype = "dashed") +
+  geom_point(aes(size = n), alpha = 0.5) +
+  theme_minimal() +
+  labs(
+    x = "Predicted Pass", 
+    y = "Observed Pass",
+    title = "Fit on training data"
+  ) +
+  coord_cartesian(
+    xlim = c(0,1), ylim = c(0, 1)
+  )
+
+```
+
+]
+
+.pull-right[
+```{r, echo = FALSE, fig.dim=c(7,7)}
+res_calib_plot + ggtitle("Fit on resamples")
+```
+
+]
+
+---
 class: inverse, middle, center
 
 ## Model Tuning with `tune`
@@ -1461,6 +1809,10 @@ knitr::include_graphics("https://raw.githubusercontent.com/rstudio/hex-stickers/
 We never adjusted our model! We just used naive models and evaluated their performance. 
 
 Now, their performance was pretty decent (~68-73% accuracy), but could we get better?
+
+--
+
+[Get Started with Tuning](https://www.tidymodels.org/start/tuning/) and test drive on [RStudio Cloud](https://rstudio.cloud/project/1479888)
 
 ---
 
@@ -1509,7 +1861,7 @@ Note that this took about 20 min to run!
 I'm doing 15x models by 5x folds, where we train a model and predict outcomes each time! The beauty here is that you could run this as a background job.
 
 ```{r, eval = FALSE}
-set.seed(37)
+set.seed(20201024)
 
 pbp_folds <- vfold_cv(train_data, v = 5)
 
@@ -1647,6 +1999,7 @@ rf_tuned <- finalize_workflow(
 Show the outcomes!
 
 ```{r}
+set.seed(20201024)
 rf_tuned_fit <- last_fit(rf_tuned, split_pbp)
 
 rf_tuned_fit %>%  # tuned model metrics
@@ -1666,7 +2019,9 @@ rf_compare_df # naive model metrics
 - Also can turn on verbose reporting so you know where you're at in the Cross-validation or tuning steps  
   - `control_grid(verbose = TRUE)`
   
-**Live Demo**
+### Live Demo
+
+- Start a background job in RStudio  
 
 ---
 

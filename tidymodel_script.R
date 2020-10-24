@@ -175,7 +175,8 @@ pbp_pred_lr %>%
   accuracy(truth = play_type, .pred_class)
 
 pbp_pred_lr %>% 
-  conf_mat(truth = play_type, .pred_class)
+  conf_mat(truth = play_type, .pred_class) %>% 
+  autoplot("heatmap")
 
 pbp_pred_rf %>% 
   conf_mat(truth = play_type, .pred_class)

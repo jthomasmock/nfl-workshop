@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="" xml:lang="">
   <head>
-    <title>Intro to tidymodels with nflfastR play-by-play</title>
+    <title>Intro to tidymodels with nflfastR</title>
     <meta charset="utf-8" />
-    <meta name="author" content="Thomas Mock: @thomas_mock" />
-    <meta name="date" content="2020-10-23" />
+    <meta name="author" content="Tom Mock: @thomas_mock" />
+    <meta name="date" content="2020-10-24" />
     <script src="tidymodels_intro_files/header-attrs-2.4/header-attrs.js"></script>
     <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
   </head>
@@ -12,11 +12,12 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# Intro to <code>tidymodels</code> with <code>nflfastR</code> play-by-play
-### Thomas Mock: <code>@thomas_mock</code>
-### 2020-10-23
+# Intro to <code>tidymodels</code> with <code>nflfastR</code>
+### Tom Mock: <a href="https://twitter.com/thomas_mock"><code>@thomas_mock</code></a>
+### 2020-10-24
 
 ---
+
 
 
 
@@ -33,6 +34,33 @@ layout: true
 
 
 
+
+### What have I done?
+
+* Scored 100% of our game-winning goals on my 2010 College Lacrosse Team (we only won 1 game 😢)  
+* Bachelor's in Kinesiology (2011) - Effect of Sugar vs Sugar-Free Mouth Rinse on Performance  
+* Master's in Exercise Physiology (2014) - Effect of Exercise on Circulating Brain Biomarkers  
+* PhD in Neurobiology (2018) - Effect of Aging + Glutathione Deficiency on Motor and Cognitive Function    
+
+--
+
+### What do I do?
+
+* RStudio, Customer Success (2018 - Current) - I run our High Technology + Sports vertical, helping RStudio's customers use our Pro and open source software to solve problems with data  
+
+--
+
+* [`#TidyTuesday`](https://github.com/rfordatascience/tidytuesday/blob/master/README.md) - Weekly data analysis community project (~4,000 participants in past 3 years)  
+
+--
+
+* [TheMockUp.blog](https://themockup.blog/) - Explanatory blogging about `How to do Stuff` with data + `#rstats`, *mostly* with NFL data  
+
+--
+
+* [`espnscrapeR`](https://jthomasmock.github.io/espnscrapeR/) - collect data from ESPN's public APIs, mostly for QBR and team standings  
+
+---
 
 .pull-left[
 ### The `nflscrapR` team:
@@ -56,6 +84,16 @@ layout: true
 ]
 
 These datasets set the bar for publicly-available NFL data!
+
+---
+
+### Shoutout to the NFL Big Data Bowl
+
+![](https://storage.googleapis.com/kaggle-competitions/kaggle/15696/logos/thumb76_76.png?t=2019-10-04-16-17-46)
+
+[Kaggle link](https://www.kaggle.com/c/nfl-big-data-bowl-2021)
+
+&gt; This competition uses NFL’s Next Gen Stats data, which includes the position and speed of every player on the field during each play. You’ll employ player tracking data for all drop-back pass plays from the 2018 regular season. The goal of submissions is to identify unique and impactful approaches to measure defensive performance on these plays.
 
 ---
 
@@ -94,8 +132,21 @@ Binary classification:
 - Logistic Regression  
 - Random Forest  
 
+--
+
 Slides at: [cmsac-tidymodels.netlify.app/](https://cmsac-tidymodels.netlify.app/#1)  
 Source code at: [github.com/jthomasmock/nfl-workshop](https://github.com/jthomasmock/nfl-workshop)  
+
+--
+
+To follow along, you can read in the subsetted data with the code below:  
+
+
+```r
+raw_plays &lt;- read_rds(
+  url("https://github.com/jthomasmock/nfl-workshop/blob/master/raw_plays.rds?raw=true")
+  )
+```
 
 ---
 
@@ -114,13 +165,15 @@ It's just not possible!
 * Make you comfortable with the **syntax** and **packages** via `tidymodels` unified interface
 * So when you're learning or modeling on your own, you get to focus on the **stats** rather than re-learning different APIs over and over...
 
-Along the way, we'll cover minimal examples and then some more quick best practices
+--
+
+Along the way, we'll cover minimal examples and then some more quick best practices where `tidymodels` makes it easier to do more things!  
 
 ---
 
 # `tidymodels`
 
-The `tidymodels` framework is a collection of packages for modeling and machine learning using `tidyverse` principles.
+`tidymodels` is a collection of packages for modeling and machine learning using `tidyverse` principles.
 
 ## Packages
 * `rsample`: efficient data splitting and resampling  
@@ -160,7 +213,7 @@ I *personally* use `broom` for more classical statistics and `tidymodels` for ma
 
 ### Before we get to sweeping
 
-QBR = ESPN's Quarterback Rating, which ranges from 0 - 100.
+Why do we care so much about QBs, passing, and EPA?
 
 --
 
@@ -206,7 +259,7 @@ basic_plot &lt;- basic_data %&gt;%
 --
 
 .pull-right[
-&lt;img src="tidymodels_intro_files/figure-html/unnamed-chunk-7-1.png" width="360" /&gt;
+&lt;img src="tidymodels_intro_files/figure-html/unnamed-chunk-8-1.png" width="360" /&gt;
 
 ]
 
@@ -313,6 +366,51 @@ broom::glance(basic_lm)
 
 There's a lot more to `broom` for *tidy-ier* modeling - out of scope for today, but I have a detailed [**blogpost**](https://themockup.blog/posts/2020-05-01-tidy-long-models/).
 
+.medium[
+
+```r
+tidy_off_models &lt;- nest_off_data %&gt;% 
+    mutate(
+      fit = map(data, ~ lm(value.y ~ value.x, data = .x)),
+      tidy_output = map(fit, glance)
+    )
+
+tidy_off_models
+```
+
+]
+
+--
+
+.medium[
+```
+# # A tibble: 12 x 4
+#    metric         data               fit    tidy_output      
+#    &lt;chr&gt;          &lt;list&gt;             &lt;list&gt; &lt;list&gt;           
+#  1 pass_att       &lt;tibble [593 × 5]&gt; &lt;lm&gt;   &lt;tibble [1 × 12]&gt;
+#  2 pass_comp_pct  &lt;tibble [593 × 5]&gt; &lt;lm&gt;   &lt;tibble [1 × 12]&gt;
+#  3 yds_att        &lt;tibble [593 × 5]&gt; &lt;lm&gt;   &lt;tibble [1 × 12]&gt;
+#  4 pass_yds       &lt;tibble [593 × 5]&gt; &lt;lm&gt;   &lt;tibble [1 × 12]&gt;
+#  5 pass_td        &lt;tibble [593 × 5]&gt; &lt;lm&gt;   &lt;tibble [1 × 12]&gt;
+#  6 int            &lt;tibble [593 × 5]&gt; &lt;lm&gt;   &lt;tibble [1 × 12]&gt;
+#  7 pass_rating    &lt;tibble [593 × 5]&gt; &lt;lm&gt;   &lt;tibble [1 × 12]&gt;
+#  8 first_downs    &lt;tibble [593 × 5]&gt; &lt;lm&gt;   &lt;tibble [1 × 12]&gt;
+#  9 pass_first_pct &lt;tibble [593 × 5]&gt; &lt;lm&gt;   &lt;tibble [1 × 12]&gt;
+# 10 pass_20plus    &lt;tibble [593 × 5]&gt; &lt;lm&gt;   &lt;tibble [1 × 12]&gt;
+# 11 pass_40plus    &lt;tibble [593 × 5]&gt; &lt;lm&gt;   &lt;tibble [1 × 12]&gt;
+# 12 sacks          &lt;tibble [593 × 5]&gt; &lt;lm&gt;   &lt;tibble [1 × 12]&gt;
+```
+
+]
+
+
+---
+
+#### Want more `broom`?
+
+There's a lot more to `broom` for *tidy-ier* modeling - out of scope for today, but I have a detailed [**blogpost**](https://themockup.blog/posts/2020-05-01-tidy-long-models/).
+
+
 &lt;img src="https://themockup.blog/posts/2020-05-01-tidy-long-models/distill-preview.png" width="60%" /&gt;
 
 
@@ -371,6 +469,10 @@ Accuracy = How often the classifier is correct out of the total possible predict
 
 --
 
+Accuracy = True Positives + True Negatives / (True Positives + True Negatives + False Positives + False Negatives)
+
+--
+
 * True Positive Rate (Sensitivity/Recall):  
   - Out of all **true positives**, how many did you predict right?  
   - True Positives / (True Positives + False Negatives)  
@@ -390,9 +492,24 @@ There are several other types of calculations you can generate, but these cover 
 
 ---
 
-### ROC Curve example
+#### ROC Curve example
 
-&lt;img src="https://bradleyboehmke.github.io/HOML/02-modeling-process_files/figure-html/modeling-process-roc-1.png" width="55%" /&gt;
+.medium[
+* False Positive Rate == (`1 - Specificity`) on X
+* True Positive Rate (Sensitivity) on Y  
+
+]
+
+--
+
+.medium[
+* AUC = Area Under the Curve (higher = better)
+
+]
+
+--
+
+&lt;img src="https://bradleyboehmke.github.io/HOML/02-modeling-process_files/figure-html/modeling-process-roc-1.png" width="50%" /&gt;
 
 
 Adapted from [Hands on Machine Learning with R](https://bradleyboehmke.github.io/HOML/process.html#classification-models)
@@ -430,6 +547,50 @@ Adapted from [Hands on Machine Learning with R](https://bradleyboehmke.github.io
 
 Adapted from [Hands on Machine Learning with R](https://bradleyboehmke.github.io/HOML/process.html#classification-models)
 
+---
+
+### Confusion Matrix
+.pull-left[
+
+```
+##            Truth
+## Prediction  Event Non-Event
+##   Event     10918      3647
+##   Non-Event  2665      5763
+```
+
+]
+
+.pull-right[
+
+```r
+table_conf_mat %&gt;% 
+  autoplot("heatmap")
+```
+
+&lt;img src="tidymodels_intro_files/figure-html/unnamed-chunk-23-1.png" width="360" /&gt;
+
+]
+
+
+---
+
+### Calibration Plot
+
+How well do the predictions stand up against the observed?
+
+.pull-left[
+&lt;img src="tidymodels_intro_files/figure-html/unnamed-chunk-24-1.png" width="432" /&gt;
+
+
+]
+
+--
+
+.pull-right[
+&lt;img src="https://www.tmwr.org/figures/resampling-cv-pred-plot-1.svg" width="75%" /&gt;
+
+]
 
 ---
 
@@ -805,8 +966,43 @@ pbp_rec &lt;- recipe(play_type ~ ., data = train_data)  %&gt;%
 ### In `recipes` vs `dplyr`/`tidyr`
 
 Generally:  
-* Reshaping or basic cleaning - do in `tidyverse`  
-* Statistical transformations or other things that are intended for modeling  
+* In `tidyverse`, do reshaping or basic cleaning   
+* In `recipes` do statistical transformations or other things that are intended for modeling  
+  - Possible `step_???` for many many things!  
+
+--
+
+### `usemodels`
+
+Relatively early in package life cycle, but helps with boilerplate
+
+.small[
+
+```r
+usemodels::use_ranger(play_type ~ ., train_data)
+```
+
+```
+## ranger_recipe &lt;- 
+##   recipe(formula = play_type ~ ., data = train_data) %&gt;% 
+##   step_string2factor(one_of(posteam, defteam)) 
+## 
+## ranger_spec &lt;- 
+##   rand_forest(mtry = tune(), min_n = tune(), trees = 1000) %&gt;% 
+##   set_mode("classification") %&gt;% 
+##   set_engine("ranger") 
+## 
+## ranger_workflow &lt;- 
+##   workflow() %&gt;% 
+##   add_recipe(ranger_recipe) %&gt;% 
+##   add_model(ranger_spec) 
+## 
+## set.seed(68747)
+## ranger_tune &lt;-
+##   tune_grid(ranger_workflow, resamples = stop("add your rsample object"), grid = stop("add number of candidate points"))
+```
+
+]
 
 ---
 class:inverse, center, middle
@@ -861,6 +1057,14 @@ A workflow is an object that can bundle together your pre-processing, modeling, 
 
 * If you have custom tuning parameter settings, these can be defined using a simpler interface when combined with `tune`.
 
+--
+
+### Steps so far
+
+- Build a recipe for any pre-processing  
+- Choose and build a model  
+- Combine them into a `workflow`
+
 ---
 
 ## Fit/train the model with `parsnip`
@@ -889,6 +1093,57 @@ pbp_pred_lr &lt;- predict(pbp_fit_lr, test_data) %&gt;%
   bind_cols(predict(pbp_fit_lr, test_data, type = "prob"))
 ```
 
+
+```
+## # A tibble: 22,993 x 4
+##    .pred_class play_type .pred_pass .pred_run
+##    &lt;fct&gt;       &lt;fct&gt;          &lt;dbl&gt;     &lt;dbl&gt;
+##  1 pass        run            0.789     0.211
+##  2 pass        pass           0.746     0.254
+##  3 run         run            0.345     0.655
+##  4 pass        pass           0.701     0.299
+##  5 pass        pass           0.676     0.324
+##  6 run         pass           0.433     0.567
+##  7 run         run            0.431     0.569
+##  8 run         run            0.335     0.665
+##  9 run         run            0.306     0.694
+## 10 pass        run            0.694     0.306
+## # … with 22,983 more rows
+```
+
+
+
+---
+
+## Predict outcomes with `parsnip`
+
+Note that out previous code of `predict() %&gt;% bind_cols() %&gt;% bind_cols()` is really the equivalent to the below:  
+
+
+```r
+pbp_last_lr &lt;- last_fit(lr_mod, pbp_rec, split = split_pbp)
+
+pbp_last_lr %&gt;% 
+  pluck(".predictions", 1)
+```
+
+```
+## # A tibble: 22,993 x 5
+##    .pred_pass .pred_run  .row .pred_class play_type
+##         &lt;dbl&gt;     &lt;dbl&gt; &lt;int&gt; &lt;fct&gt;       &lt;fct&gt;    
+##  1      0.789     0.211     4 pass        run      
+##  2      0.746     0.254     7 pass        pass     
+##  3      0.345     0.655    17 run         run      
+##  4      0.701     0.299    19 pass        pass     
+##  5      0.676     0.324    24 pass        pass     
+##  6      0.433     0.567    31 run         pass     
+##  7      0.431     0.569    43 run         run      
+##  8      0.335     0.665    46 run         run      
+##  9      0.306     0.694    48 run         run      
+## 10      0.694     0.306    50 pass        run      
+## # … with 22,983 more rows
+```
+
 ---
 class: inverse, middle, center
 
@@ -915,7 +1170,7 @@ pbp_pred_lr %&gt;%
 ## # A tibble: 1 x 3
 ##   .metric .estimator .estimate
 ##   &lt;chr&gt;   &lt;chr&gt;          &lt;dbl&gt;
-## 1 roc_auc binary         0.781
+## 1 roc_auc binary         0.780
 ```
 
 ```r
@@ -929,8 +1184,8 @@ pbp_pred_lr %&gt;%
 ## # A tibble: 2 x 3
 ##   .metric  .estimator .estimate
 ##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
-## 1 accuracy binary         0.725
-## 2 kap      binary         0.423
+## 1 accuracy binary         0.723
+## 2 kap      binary         0.418
 ```
 
 ]
@@ -948,12 +1203,33 @@ pbp_pred_lr %&gt;%
   autoplot()
 ```
 
-&lt;img src="tidymodels_intro_files/figure-html/unnamed-chunk-38-1.png" width="360" /&gt;
+&lt;img src="tidymodels_intro_files/figure-html/unnamed-chunk-47-1.png" width="360" /&gt;
 
 ]
 
 ]
 
+---
+
+### Note on Checking Outcomes
+
+You *could* use `last_fit()`:  
+&gt; This functions is intended to be used after fitting a variety of models and the final tuning parameters (if any) have been finalized. The next step would be to fit using the entire training set and verify performance using the test data.
+
+
+```r
+lr_last_fit &lt;- last_fit(lr_mod, pbp_rec, split = split_pbp)
+
+collect_metrics(lr_last_fit)
+```
+
+```
+## # A tibble: 2 x 3
+##   .metric  .estimator .estimate
+##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
+## 1 accuracy binary         0.723
+## 2 roc_auc  binary         0.780
+```
 
 
 ---
@@ -1014,6 +1290,14 @@ pbp_pred_lr %&gt;%
 ]
 
 ---
+class: inverse, center, middle
+
+# Break!
+
+# ☕
+
+
+---
 
 ## Change the model
 
@@ -1041,41 +1325,6 @@ pbp_pred_rf &lt;- predict(pbp_fit_rf, test_data) %&gt;%
   bind_cols(predict(pbp_fit_rf, test_data, type = "prob"))
 ```
 
-
----
-
-### Quick comparison
-
-The random forest model slightly outperforms the logistic regression, although both are not perfect
-
-
-```r
-pbp_pred_rf %&gt;% # Random Forest predictions
-  metrics(truth = play_type, .pred_class)
-```
-
-```
-## # A tibble: 2 x 3
-##   .metric  .estimator .estimate
-##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
-## 1 accuracy binary         0.731
-## 2 kap      binary         0.441
-```
-
-```r
-pbp_pred_lr %&gt;% # Logistic Regression predictions
-  metrics(truth = play_type, .pred_class)
-```
-
-```
-## # A tibble: 2 x 3
-##   .metric  .estimator .estimate
-##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
-## 1 accuracy binary         0.725
-## 2 kap      binary         0.423
-```
-
-
 ---
 
 ### Feature Importance
@@ -1088,9 +1337,73 @@ pbp_fit_rf %&gt;%
   vip(num_features = 20)
 ```
 
-&lt;img src="tidymodels_intro_files/figure-html/unnamed-chunk-44-1.png" width="720" /&gt;
+&lt;img src="tidymodels_intro_files/figure-html/unnamed-chunk-54-1.png" width="720" /&gt;
 
 ]
+
+---
+
+### Quick Model Comparison
+
+The random forest model slightly outperforms the logistic regression, although both are not perfect
+
+
+```r
+pbp_pred_lr %&gt;% # Logistic Regression predictions
+  metrics(truth = play_type, .pred_class)
+```
+
+```
+## # A tibble: 2 x 3
+##   .metric  .estimator .estimate
+##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
+## 1 accuracy binary         0.723
+## 2 kap      binary         0.418
+```
+
+```r
+pbp_pred_rf %&gt;% # Random Forest predictions
+  metrics(truth = play_type, .pred_class)
+```
+
+```
+## # A tibble: 2 x 3
+##   .metric  .estimator .estimate
+##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
+## 1 accuracy binary         0.728
+## 2 kap      binary         0.434
+```
+
+---
+
+### Quick Model Comparison
+
+
+```r
+pbp_pred_lr %&gt;% # Logistic Regression predictions
+  conf_mat(truth = play_type, .pred_class)
+```
+
+```
+##           Truth
+## Prediction  pass   run
+##       pass 10911  3686
+##       run   2672  5724
+```
+
+```r
+pbp_pred_rf %&gt;% # Random Forest predictions
+  conf_mat(truth = play_type, .pred_class)
+```
+
+```
+##           Truth
+## Prediction  pass   run
+##       pass 10675  3338
+##       run   2908  6072
+```
+
+
 
 ---
 
@@ -1134,7 +1447,7 @@ full_plot &lt;- bind_rows(roc_rf, roc_lr) %&gt;%
 full_plot
 ```
 
-&lt;img src="tidymodels_intro_files/figure-html/unnamed-chunk-46-1.png" width="432" /&gt;
+&lt;img src="tidymodels_intro_files/figure-html/unnamed-chunk-57-1.png" width="432" /&gt;
 
 ]
 
@@ -1148,7 +1461,7 @@ full_plot
 calibration_plot &lt;- pbp_pred_rf %&gt;% 
   mutate(
     pass = if_else(play_type == "pass", 1, 0),
-    pred_rnd = round(.pred_pass, 1)
+    pred_rnd = round(.pred_pass, 2)
     ) %&gt;% 
   group_by(pred_rnd) %&gt;% 
   summarize(
@@ -1158,7 +1471,7 @@ calibration_plot &lt;- pbp_pred_rf %&gt;%
     ) %&gt;% 
   ggplot(aes(x = mean_pred, y = mean_obs)) +
   geom_abline(linetype = "dashed") +
-  geom_point(aes(size = n)) +
+  geom_point(aes(size = n), alpha = 0.5) +
   theme_minimal() +
   labs(
     x = "Predicted Pass", 
@@ -1172,7 +1485,7 @@ calibration_plot &lt;- pbp_pred_rf %&gt;%
 ]
 
 .pull-right[
-&lt;img src="tidymodels_intro_files/figure-html/unnamed-chunk-48-1.png" width="504" /&gt;
+&lt;img src="tidymodels_intro_files/figure-html/calibrate-plot-fit-1.png" width="504" /&gt;
 
 ]
 
@@ -1191,8 +1504,8 @@ So the unified interface hopefully makes the idea of learning and applying many 
 
 --
 
-`tidymodels` *really* shines when you start to apply additional best practices like:  
-* Resampling, Cross Validation, Bootstraps  
+`tidymodels` *really* shines when you start to go further or apply best practices like:  
+* Resampling, Cross Validation, Bootstrapping  
 * Model Tuning and Model Optimization  
 * Grid Search, Iterative Search  
 
@@ -1232,7 +1545,9 @@ Previously we've just compared two models by seeing how accurate they were on ou
 
 - [*Tidy Modeling with R*](https://www.tmwr.org/resampling.html#resampling-methods)
 
+--
 
+[Get Started w/ Resampling](https://www.tidymodels.org/start/resampling/) and test drive on [RStudio Cloud](https://rstudio.cloud/project/1479888).
 
 ---
 
@@ -1394,21 +1709,134 @@ rf_res
 
 ---
 
+### What just happened???
+
+We just fit a model for each resample, evaluated it against a within resample assessment set, and stored it into a single `tibble`!
+
+.pull-left[
+
+```r
+rf_res %&gt;% 
+  # grab specific columns and resamples
+  pluck(".metrics", 1) 
+```
+
+```
+## # A tibble: 2 x 3
+##   .metric  .estimator .estimate
+##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
+## 1 accuracy binary         0.730
+## 2 roc_auc  binary         0.794
+```
+
+]
+
+
+.pull-right[
+
+```r
+rf_res %&gt;% 
+  # grab specific columns and resamples
+  pluck(".predictions", 10)
+```
+
+```
+## # A tibble: 6,898 x 5
+##    .pred_pass .pred_run  .row .pred_class play_type
+##         &lt;dbl&gt;     &lt;dbl&gt; &lt;int&gt; &lt;fct&gt;       &lt;fct&gt;    
+##  1      0.552    0.448      8 pass        pass     
+##  2      0.711    0.289     18 pass        pass     
+##  3      0.697    0.303     26 pass        run      
+##  4      0.977    0.0227    41 pass        pass     
+##  5      0.947    0.0530    48 pass        pass     
+##  6      0.295    0.705     51 run         run      
+##  7      0.437    0.563     75 run         run      
+##  8      0.701    0.299     96 pass        pass     
+##  9      0.610    0.390    111 pass        run      
+## 10      0.810    0.190    117 pass        pass     
+## # … with 6,888 more rows
+```
+
+]
+
+---
+
+### What else can you do?
+
+.pull-left[
+
+```r
+# Summarize all metrics
+rf_res %&gt;% 
+  collect_metrics(summarize = TRUE)
+```
+
+```
+## # A tibble: 2 x 5
+##   .metric  .estimator  mean     n  std_err
+##   &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;    &lt;dbl&gt;
+## 1 accuracy binary     0.730    50 0.000651
+## 2 roc_auc  binary     0.797    50 0.000631
+```
+
+]
+
+
+.pull-right[
+
+```r
+rf_res %&gt;% 
+  # combine ALL predictions
+  collect_predictions()
+```
+
+.small[
+
+```
+## # A tibble: 344,915 x 7
+##    id      id2    .pred_pass .pred_run  .row .pred_class play_type
+##    &lt;chr&gt;   &lt;chr&gt;       &lt;dbl&gt;     &lt;dbl&gt; &lt;int&gt; &lt;fct&gt;       &lt;fct&gt;    
+##  1 Repeat1 Fold01      0.663     0.337     3 pass        run      
+##  2 Repeat1 Fold01      0.730     0.270    22 pass        pass     
+##  3 Repeat1 Fold01      0.424     0.576    23 run         pass     
+##  4 Repeat1 Fold01      0.348     0.652    27 run         run      
+##  5 Repeat1 Fold01      0.482     0.518    28 run         run      
+##  6 Repeat1 Fold01      0.695     0.305    35 pass        run      
+##  7 Repeat1 Fold01      0.381     0.619    61 run         pass     
+##  8 Repeat1 Fold01      0.166     0.834    69 run         run      
+##  9 Repeat1 Fold01      0.781     0.219    80 pass        pass     
+## 10 Repeat1 Fold01      0.333     0.667    84 run         run      
+## # … with 344,905 more rows
+```
+
+]
+
+]
+
+---
+
 ### Collect metrics
 
 First show our predicted model with compared against our test data.
 
+--
 
 .medium[
 .pull-left[
 
+
+
 ```r
 # Naive Model on Testing Data
 rf_compare_df &lt;- bind_rows(
-  accuracy(pbp_pred_rf, 
-    truth = play_type, .pred_class),
-  roc_auc(pbp_pred_rf, 
-    truth = play_type, .pred_pass)
+  accuracy(
+    pbp_pred_rf, 
+    truth = play_type, .pred_class
+    ),
+  roc_auc(
+    pbp_pred_rf, 
+    truth = play_type, .pred_pass
+    )
   )
 ```
 
@@ -1422,18 +1850,19 @@ combo_plot &lt;- rf_res %&gt;%
   geom_jitter(width = 0.2) +
   geom_boxplot(width = 0.3, alpha = 0.5) +
   geom_point(
-    data = rf_compare_df, #
-    color = "red",
-    size = 3 
+    data = rf_compare_df,
+    color = "red", size = 5
     )
 ```
 ]
 
 ]
 
+--
+
 .tiny[
 .pull-right[
-&lt;img src="tidymodels_intro_files/figure-html/unnamed-chunk-58-1.png" width="432" /&gt;
+&lt;img src="tidymodels_intro_files/figure-html/unnamed-chunk-74-1.png" width="432" /&gt;
 
 ]
 
@@ -1504,7 +1933,21 @@ res_calib_plot &lt;- assess_res %&gt;%
 ]
 
 .pull-right[
-&lt;img src="tidymodels_intro_files/figure-html/unnamed-chunk-61-1.png" width="504" /&gt;
+&lt;img src="tidymodels_intro_files/figure-html/unnamed-chunk-77-1.png" width="504" /&gt;
+
+]
+
+---
+
+### Compare the Calibrations
+
+.pull-left[
+&lt;img src="tidymodels_intro_files/figure-html/unnamed-chunk-78-1.png" width="504" /&gt;
+
+]
+
+.pull-right[
+&lt;img src="tidymodels_intro_files/figure-html/unnamed-chunk-79-1.png" width="504" /&gt;
 
 ]
 
@@ -1522,6 +1965,10 @@ class: inverse, middle, center
 We never adjusted our model! We just used naive models and evaluated their performance. 
 
 Now, their performance was pretty decent (~68-73% accuracy), but could we get better?
+
+--
+
+[Get Started with Tuning](https://www.tidymodels.org/start/tuning/) and test drive on [RStudio Cloud](https://rstudio.cloud/project/1479888)
 
 ---
 
@@ -1558,11 +2005,11 @@ tune_rf_wf
 ```
 
 ```
-## ══ Workflow ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+## ══ Workflow ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 ## Preprocessor: Recipe
 ## Model: rand_forest()
 ## 
-## ── Preprocessor ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+## ── Preprocessor ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ## 5 Recipe Steps
 ## 
 ## ● step_rm()
@@ -1571,7 +2018,7 @@ tune_rf_wf
 ## ● step_center()
 ## ● step_zv()
 ## 
-## ── Model ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+## ── Model ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ## Random Forest Model Specification (classification)
 ## 
 ## Main Arguments:
@@ -1598,7 +2045,7 @@ I'm doing 15x models by 5x folds, where we train a model and predict outcomes ea
 
 
 ```r
-set.seed(37)
+set.seed(20201024)
 
 pbp_folds &lt;- vfold_cv(train_data, v = 5)
 
@@ -1697,7 +2144,7 @@ plot_tuned &lt;- tune_res %&gt;%
 
 .tiny[
 .pull-right[
-&lt;img src="tidymodels_intro_files/figure-html/unnamed-chunk-70-1.png" width="288" /&gt;
+&lt;img src="tidymodels_intro_files/figure-html/unnamed-chunk-88-1.png" width="288" /&gt;
 
 ]
 
@@ -1735,7 +2182,7 @@ plot_tuned +
   scale_y_continuous(limits = c(0.75, 0.85))
 ```
 
-&lt;img src="tidymodels_intro_files/figure-html/unnamed-chunk-72-1.png" width="288" /&gt;
+&lt;img src="tidymodels_intro_files/figure-html/unnamed-chunk-90-1.png" width="288" /&gt;
 
 ]
 
@@ -1782,6 +2229,7 @@ Show the outcomes!
 
 
 ```r
+set.seed(20201024)
 rf_tuned_fit &lt;- last_fit(rf_tuned, split_pbp)
 
 rf_tuned_fit %&gt;%  # tuned model metrics
@@ -1792,8 +2240,8 @@ rf_tuned_fit %&gt;%  # tuned model metrics
 ## # A tibble: 2 x 3
 ##   .metric  .estimator .estimate
 ##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
-## 1 accuracy binary         0.732
-## 2 roc_auc  binary         0.798
+## 1 accuracy binary         0.729
+## 2 roc_auc  binary         0.796
 ```
 
 
@@ -1805,7 +2253,7 @@ rf_compare_df # naive model metrics
 ## # A tibble: 2 x 3
 ##   .metric  .estimator .estimate
 ##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
-## 1 accuracy binary         0.731
+## 1 accuracy binary         0.728
 ## 2 roc_auc  binary         0.797
 ```
 
@@ -1818,7 +2266,9 @@ rf_compare_df # naive model metrics
 - Also can turn on verbose reporting so you know where you're at in the Cross-validation or tuning steps  
   - `control_grid(verbose = TRUE)`
   
-**Live Demo**
+### Live Demo
+
+- Start a background job in RStudio  
 
 ---
 
