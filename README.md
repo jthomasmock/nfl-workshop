@@ -7,9 +7,18 @@ Slides at [cmsac-tidymodels.netlify.app](https://cmsac-tidymodels.netlify.app/#1
 
 ![](images/readme-preview.png)
 
+### Packages
+
+```r
+install.packages("tidymodels")
+remotes::install_github("jthomasmock/espnscrapeR")
+```
 
 ### Source Code
 
 There are a few files for you to use for source-code:  
 - [`raw_plays.rds`](https://github.com/jthomasmock/nfl-workshop/blob/master/raw_plays.rds) - so you don't have to download ALL the `nflfastR` data
 - [Full Code extracted from RMD Slides](https://github.com/jthomasmock/nfl-workshop/blob/master/tidymodels-code.R)
+
+
+
